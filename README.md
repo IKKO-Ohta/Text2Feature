@@ -53,7 +53,7 @@ Text2Feature
 - index.Index(unigram=1, bigram=0, trigram=0, dep_bigram=0, dep_trigram=0)
   - methods
     - add_index(folder_path): 指定したフォルダ内にあるtreeから、Indexに追加する
-    - save(file_path):  '''
+    - save(file_path):   '''
         		self.indexをfile_pathの出現頻度降順で出力する.
 		        また、一行目にどの素性を利用しているかを書く。
         		例)---------------------------------------
@@ -106,4 +106,3 @@ Text2Feature
     - sim_example_cos(input_vector, corpus_vector): input_vectors と corpus_vectorsのcos_simを計算して、matrixを返す.
   - attribute
     - file_list: 読み込んだファイル名のリスト
-# Text2Feature
