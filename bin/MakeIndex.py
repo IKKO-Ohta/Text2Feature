@@ -1,0 +1,101 @@
+#!/home/ushiku/.pyenv/shims/python
+# -*- coding: utf-8 -*-
+#=====================================================================================
+#                       MakeIndex.py
+#                           by Atsushi Ushiku
+#                           Last change : 4 Sep 2016
+#=====================================================================================
+
+# 機  能 : indexを作成する
+#
+# 使用法 : python MakeIndex.py 
+#
+# 実  例 : python MakeIndex.py ../corpus/text ../auto/test.index ../auto/vector ../auto/text ../auto/tree
+#
+# 注意点 : 引数は 1,textのfolderのpass, 2,indexの保存先, 3,vectorの保存先, 4,preprocessの保存先, 5,treeの保存先 
+
+#-------------------------------------------------------------------------------------
+#                       import
+#-------------------------------------------------------------------------------------
+
+import os
+import sys
+import glob
+sys.path.insert(1, os.getcwd() + "/../lib/python")  # モジュールの読み込む先を上から2番目に追加している(一番目は、current dir)
+from index import Index
+from preprocess import Preprocessor
+from parse import Parser
+from vectorizer import Vectorizer
+
+#-------------------------------------------------------------------------------------
+#                       set constant
+#-------------------------------------------------------------------------------------
+
+text_folder_path = sys.argv[1]
+index_path = sys.argv[2]
+vector_folder_path = sys.argv[3]
+auto_text_path = sys.argv[4]
+tree_path = sys.argv[5]
+
+kytea_path = '../model/Train+Test-2017-03-19.kbm'
+eda_path = '../model/0303.ebm'
+
+thesaurus_path = '../corpus/thesaurus/thesaurus.txt'
+
+
+#-------------------------------------------------------------------------------------
+#                       main
+#-------------------------------------------------------------------------------------
+
+PREPROCESSOR = Preprocessor(thesaurus_path)
+print('前処理を行います')
+PREPROCESSOR.load_text(sorted(glob.glob(text_folder_path + '/*')))
+whitelist = PREPROCESSOR.investigate_whitelist(thesaurus_path)
+print('保存します')
+PREPROCESSOR.save(auto_text_path)
+PARSER = Parser()
+print('かかり受け解析を行います..')
+PARSER.t2f(sorted(glob.glob(auto_text_path + '/*')), kytea_model=kytea_path, eda_model=eda_path)  # text_pathのファイルをかかり受け解析
+print('結果を保存します')
+PARSER.save(tree_path)  # かかり受け解析したものをファイルに保存
+INDEX = Index(unigram = 1, dep_trigram = 1, bigram = 1, dep_bigram = 1)  # Indexをunigramとbigramの素性を、treeから読み出すことでIndexを作成する
+print('Treeを読み込みます')
+INDEX.add_index(sorted(glob.glob(tree_path + '/*')))  # tree_pathのフォルダ以下のファイルからインデックスを作る
+print('INDEXを保存します...')
+INDEX.save(index_path)  # index_pathにインデックスを保存
+print(index_path)
+print("Indexを読み込みます...")
+VECTORIZER = Vectorizer(index_path, t=1,list = whitelist)  # Indexの読み込み  # 閾値は1
+print('Treeを読み込みます')
+vectors = VECTORIZER.get_vector(sorted(glob.glob(tree_path + '/*')), filter=3)  # ベクトルを生成
+print(vectors)
+print('Vectorを保存します')
+filename_list = sorted(glob.glob(tree_path + '/*'))
+vector_path_list = []
+for filename in filename_list:
+    base_name = os.path.basename(filename)  # A.text
+    root = os.path.splitext(base_name)[0]  # A
+    file_name = vector_folder_path + '/' + root + '.vector'
+    vector_path_list.append(file_name)
+VECTORIZER.save(vectors, vector_path_list)  # ベクトルを保存
+print(vector_path_list)
+
+IDF = VECTORIZER.calculate_IDF(vectors)
+IDF_path = '../auto/IDF.index'
+VECTORIZER.save_IDF(IDF, IDF_path)
+print('IDFVectorを保存します')
+
+print('データベースにTFIDF値を登録します...')
+tfidf_corpus_vectors = vectors * IDF
+print(tfidf_corpus_vectors)
+TFIDF_path = '../auto/TFIDF_vectors_DB'
+vector_path_list = [] # 以下72行目の流用,サブルーチン化すべき
+for filename in filename_list:
+    base_name = os.path.basename(filename)  # A.text
+    root = os.path.splitext(base_name)[0]  # A
+    file_name = TFIDF_path + '/' + root + '.vector'
+    vector_path_list.append(file_name)
+VECTORIZER.save(tfidf_corpus_vectors, vector_path_list)  # ベクトルを保存
+#=====================================================================================
+#                       END
+#=====================================================================================

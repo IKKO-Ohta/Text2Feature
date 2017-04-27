@@ -1,0 +1,293 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import itertools
+import sys
+import numpy as np
+from collections import OrderedDict
+from parse import Parser
+
+
+class Index:
+    '''
+    vectorizeするためのindexを扱うクラス
+    '''
+
+    def __init__(self, unigram=1, bigram=0, trigram=0, dep_bigram=0, dep_trigram=0):
+        self.unigram = unigram  # unigramを利用するかのフラグ 1 or 0
+        self.bigram = bigram
+        self.trigram = trigram
+        self.dep_bigram = dep_bigram
+        self.dep_trigram = dep_trigram
+        self.index = OrderedDict()
+        self.index = {'UNKNOWN': 0}  # Index. load or add_indexで更新
+        self.index = OrderedDict()
+        self.dict = {}  # UNKNOWNで潰す用の出現頻度のdict
+
+    def add_index(self, file_path_list):
+        '''
+        指定したフォルダ内にあるtreeから、Indexに追加する。
+        '''
+        tree_list = [Parser().load(file_path_list)]  # 指定したフォルダからかかり受け済みのファイルを読み出す
+        text_list = []  # 素性ごとのlist
+
+        if self.unigram == 1:  # フラグを見て、どの素性を利用するかを決定する
+            text = [0]
+            for tree in tree_list:
+                text.extend(self.tree2unigram(tree))
+            text.pop(0)
+            text_list.append(text)
+            print("unigram...done")
+
+        if self.bigram == 1:
+            text = [0]
+            for tree in tree_list:
+                text.extend(self._tree2bigram(tree))
+            text.pop(0)
+            text_list.append(text)
+            print("bigram...done")
+
+        if self.trigram == 1:
+            text = [0]
+            for tree in tree_list:
+                text.extend(self._tree2trigram(tree))
+            text.pop(0)
+            text_list.append(text)
+            print("trigram...done")
+
+        if self.dep_bigram == 1:
+            text = [0]
+            for tree in tree_list:
+                text.extend(self._tree2dep_bigram(tree))
+            text.pop(0)
+            text_list.append(text)
+            print("dep_bigram...done")
+
+        if self.dep_trigram == 1:
+            text = [0]
+            for tree in tree_list:
+                text.extend(self._tree2dep_trigram(tree))
+            text.pop(0)
+            text_list.append(text)
+            print("dep_trigram...done")
+
+        if text_list == []:  # 一つも素性が存在しない時
+            sys.stderr.write('Error: 追加すべき素性が存在しません。 文書が空か、一つも使う素性種を選択していない可能性があります')
+            return 0
+
+        '''
+        出現回数を記録した辞書の作成
+        '''
+        for text in text_list:
+            for sentence in text:
+                units = sentence.split()
+                for unit in units:
+                    if unit in self.dict:
+                        self.dict[unit] += 1
+                    else:
+                        self.dict[unit] = 1
+        return 0
+
+    def save(self, file_path):
+        '''
+        self.indexをfile_pathの出現頻度降順で出力する.
+        また、一行目にどの素性を利用しているかを書く。
+        例)---------------------------------------
+        unigram, bigram, trigram, dep-bigram, dep-trigram:1 0 0 0 1
+        元気 10
+        いい 10
+        人 9
+        は 9
+        :
+        -------------------------------------------
+        '''
+        try:
+            f = open(file_path, "w")
+        except:
+            sys.stderr.write(file_path + 'が開けませんでした。 ファイルが書き込める場所にあるか確認してください')
+            return 0
+        feature_type_line = "unigram, bigram, trigram, dep_bigram, dep_trigram:"  # 一行目用
+        for feature_type in [self.unigram, self.bigram, self.trigram, self.dep_bigram, self.dep_trigram]:
+            feature_type_line += str(feature_type) + ' '
+        f.write(feature_type_line + '\n')
+        f.write('UNKNOWN,0\n')  # UNKNOWNはここで作る  
+        #出現回数順にソートする。ループ内では、joinするために型キャストした
+        for feature in sorted(self.dict.items(), key=lambda x: int(x[1]), reverse=True):
+            f.write( ','.join([feature[0],str(feature[1])]) +'\n')
+        f.close()
+        return 0
+
+    def load(self, file_path):
+        '''
+        saveで保存したfile_pathからindexを読み込む。現在あるself.indexは上書きされる。
+        '''
+        count = 0  # indexの各素性の順番を示す
+        try:
+            file = open(file_path, 'r')
+        except:
+            sys.stderr.write(file_path + 'が開けませんでした。 インデックスが存在しているか確認してください')
+            return 0
+
+        first_line_flag = 1  # 一行目の設定を読み込むためのflag
+        for unit in file:
+            if first_line_flag == 1:  # 一行目の処理
+                feature_type_flags = unit.split(':')[1].split(' ')
+                self.unigram = feature_type_flags[0]
+                self.bigram = feature_type_flags[1]
+                self.trigram = feature_type_flags[2]
+                self.dep_bigram = feature_type_flags[3]
+                self.dep_trigram = feature_type_flags[4]
+                first_line_flag = 0
+            else:
+                unit = str(unit).split(',')
+                self.dict[unit[0]] = unit[1].strip()  # 二行目以降の処理. unitは'\n'が付いている
+                count += 1
+        return 0
+
+    # 以下は、処理用
+    @classmethod
+    def tree2unigram(self, tree):
+        '''
+        tree形式からunigramを返す。[[私 は 元気. 肝 座っている], [ . . . ]]
+        '''
+        text_word = []  # 各articleごとのunigram
+        words = ''
+        for article in tree:
+            for sentence in article:
+                for line in sentence:
+                    units = line.strip().split(' ')
+                    words = words + ' ' + units[2]+'/'+units[3]
+            text_word.append(words.strip())
+            words = ''
+        return text_word
+
+    @classmethod
+    def _tree2bigram(self, tree):
+        '''
+        tree形式からbigramを返す。[[私はは元気 元気. 肝 座 っている], [ . . . ]]
+        '''
+        text_word = []  # 各articleごとのunigram
+        words = ''
+        head = 'HEAD'
+        tail = 'TAIL'
+        for article in tree:
+            for sentence in article:
+                for line in sentence:
+                    units = line.strip().split(' ')
+                    words = words + ' ' + head + '_' + units[2]+'/'+units[3]
+                    head = units[2]+'/'+units[3]
+                words = words + ' ' + units[2]+'/'+units[3] + '_' + tail
+                head = 'HEAD'
+            text_word.append(words.strip())
+            words = ''
+        return text_word
+
+    @classmethod
+    def _tree2trigram(self, tree):
+        '''
+        tree形式からtrigramを返す。
+        '''
+        text_word = []  # 各articleごとのunigram
+        words = ''
+        head1, head2 = 'HEAD', 'HEAD'
+        tail1, tail2 = 'TAIL', 'TAIL'
+        for article in tree:
+            for sentence in article:
+                for line in sentence:
+                    units = line.strip().split(' ')
+                    words = words + ' ' + head1 + '_' + head2 + '_' + units[2]+'/'+units[3]
+                    head1 = head2
+                    head2 = units[2]+'/'+units[3]
+                words = words + ' ' + head1 + '_' + head2 + '_' + tail1
+                words = words + ' ' + head2 + '_' + tail1 + '_' + tail2
+                head1, head2 = 'HEAD', 'HEAD'
+            text_word.append(words.strip())
+            words = ''
+        return text_word
+
+    @classmethod
+    def _tree2dep_bigram(self, tree):
+        '''
+        かかり受けのbigramモデル. tree2wordにたいして、depのbigramをとる
+        '''
+        text_word = []
+        dep_bigram = ''
+        for article in tree:
+            for sentence in article:
+                if sentence == []:
+                    continue
+                dep_bigram = dep_bigram + ' ' + self._text2dep_bigram(sentence)
+            text_word.append(dep_bigram.strip())
+            dep_bigram = ''
+        return text_word
+
+    @classmethod
+    def _text2dep_bigram(self, text):
+        '''
+        depbigramを吐く. tree2dep_bigramの実行部分
+        '''
+        dep_bigram = ''
+        heads, tails, words, poss = [], [], [], []
+
+        for line in text:
+            line = line.strip()
+            units = line.split(' ')
+            heads.append(int(units[0]))
+            tails.append(int(units[1]))
+            words.append(units[2]+'/'+units[3])
+            poss.append(units[3])
+        dep_bigram = 'HEAD' + '__' + words[0]
+        for tail, word in zip(tails, words):
+            if tail == -1 or 0:
+                dep_bigram = dep_bigram + ' ' + word + '__' + 'TAIL'
+            else:
+                dep_bigram = dep_bigram + ' ' + word + '__' + words[tail - 1]
+        return dep_bigram
+
+    @classmethod
+    def _tree2dep_trigram(self, tree):
+        '''
+        depのtrigramをとる
+        '''
+        text_word = []
+        dep_trigram = ''
+        for article in tree:
+            for sentence in article:
+                if sentence == []:
+                    continue
+                dep_trigram = dep_trigram + ' ' + self._text2dep_trigram(sentence)
+            text_word.append(dep_trigram.strip())
+            dep_trigram = ''
+        return text_word
+
+    @classmethod
+    def _text2dep_trigram(self, text):
+        '''
+        deptrigramを吐く. tree2dep_trigramの実行部分
+        '''
+        dep_trigram = ''
+        heads, tails, words, poss = [], [], [], []
+        for line in text:
+            line = line.strip()
+            units = line.split(' ')
+            heads.append(int(units[0]))
+            tails.append(int(units[1]))
+            words.append(units[2]+'/'+units[3])
+            poss.append(units[3])
+        if len(words) >= 2:  # 一つのときはこの動作を行わない
+            dep_trigram = 'HEAD' + '__' + words[0] + '__' + words[1]
+        dep_trigram = dep_trigram + ' ' + 'HEAD' + '__' + 'HEAD' + '__' + words[0]
+        for tail, word in zip(tails, words):
+            if tail == -1 or 0:
+                dep_trigram = dep_trigram + ' ' + word + '__' + 'TAIL' + '__' + 'TAIL'  # 1個後ろもない
+            elif tails[tail - 1] == -1 or 0:
+                dep_trigram = dep_trigram + ' ' + word + '__' + words[tail - 1] + '__' + 'TAIL'  # 2個後ろがない
+            else:
+                dep_trigram = dep_trigram + ' ' + word + '__' + words[tail - 1] + '__' + words[
+                    tails[tail - 1] - 1]  # 2個後ろまで
+        for head, word in zip(heads, words):
+            if tails.count(head) >= 2:  # 二つ以上がこのwordにかかっている場合
+                indexes = [i for i, x in enumerate(tails) if x == head]
+                for first_second in list(itertools.combinations(indexes, 2)):  # wordにかかっているやつから順序無視で二つとり出す。
+                    dep_trigram = dep_trigram + ' ' + words[first_second[0]] + '_and_' + words[
+                        first_second[1]] + '__' + word
+        return dep_trigram

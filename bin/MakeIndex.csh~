@@ -1,0 +1,30 @@
+#set PATH = $argv[1]
+#echo $PATH
+#given /corpus/newtext
+#given /auto/indexpath
+#mkdir /auto/ newtext,newtree,newvector
+set TEXTPATH = ../corpus/text
+set INDEXPATH = ../auto/test.index
+set AUTOTEXTPATH = ../auto/text
+set TREEPATH = ../auto/tree
+set VECTORPATH = ../auto/vector
+#-------------------------------------------------------------------------------------
+#                        main
+#-------------------------------------------------------------------------------------
+echo '初期化中です'
+#rm -r $AUTOTEXTPATH
+#rm $INDEXPATH
+#rm -r $TREEPATH
+#rm -r $VECTORPATH
+#mkdir $AUTOTEXTPATH
+#mkdir $TREEPATH  
+#mkdir $VECTORPATH
+
+python -i MakeIndex.py $TEXTPATH $INDEXPATH $VECTORPATH $AUTOTEXTPATH $TREEPATH
+
+
+
+
+#-------------------------------------------------------------------------------------
+#                        end
+#-------------------------------------------------------------------------------------

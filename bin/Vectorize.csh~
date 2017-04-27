@@ -1,0 +1,31 @@
+
+#set PATH = $argv[1]
+#echo $PATH
+#given /corpus/newtext
+#given /auto/indexpath
+#mkdir /auto/ newtext,newtree,newvector
+set TEXTPATH = ../corpus/newtext/2.txt
+set INDEXPATH = ../auto/test.index
+set AUTOTEXTPATH = ../auto/newtext
+set TREEPATH = ../auto/newtree
+set VECTORPATH = ../auto/newvector/2.vector
+set TFIDFPATH = ../auto/TFIDF_vector/2.vector
+set CORPUSPATH = ../auto/vector
+
+
+#-------------------------------------------------------------------------------------
+#                        main
+#-------------------------------------------------------------------------------------
+echo '初期化中です'
+#rm -r $AUTOTEXTPATH
+#rm -r $TREEPATH
+#rm -r $VECTORPATH
+#mkdir $AUTOTEXTPATH
+#mkdir $TREEPATH  
+#mkdir $VECTORPATH
+
+python -i  Vectorize.py $TEXTPATH $INDEXPATH $VECTORPATH $TFIDFPATH 
+
+#-------------------------------------------------------------------------------------
+#                        end
+#-------------------------------------------------------------------------------------
