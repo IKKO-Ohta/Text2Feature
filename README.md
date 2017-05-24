@@ -34,7 +34,7 @@ SHARP CLOUD LABSの「QAコミュニケーションシステム」にT2Fが採�
 `$ git clone t2f`
 
 T2Fの利用にはKyTea,EDAのモデルが必要です。  
-[モデル](http://www.ar.media.kyoto-u.ac.jp/tool/Text2Feature/models.zip)より、ふたつのモデルファイルをダウンロードしてください。
+[モデル](http://www.ar.media.kyoto-u.ac.jp/tool/Text2Feature/models.zip)より、ふたつのモデルファイルをダウンロードしてください。  
 モデルファイルはmodel/に配置してください。
 
 ## Licence
@@ -42,8 +42,8 @@ T2Fの利用にはKyTea,EDAのモデルが必要です。
 [MIT](https://github.com/tcnksm/tool/blob/master/LICENCE)
 
 ## Author
-Atsushi Ushiku(初代リーダー)
-Ikko Ohta(現リーダー)
-Ryo Tomori(開発)
+Atsushi Ushiku(初代リーダー)  
+Ikko Ohta(現リーダー)  
+Ryo Tomori(開発)  
 
 Shinsuke Mori（指導）
