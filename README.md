@@ -21,11 +21,12 @@ SHARP CLOUD LABSの「QAコミュニケーションシステム」にT2Fが採�
 詳細は[公式ホームページ](http://qac.cloudlabs.sharp.co.jp/)をご覧ください。
 
 ## Requirement
+Python3 + Numpy + Scipyに加え、  
  EDA  
  KyTea  
 のセットアップが必要です。 
 導入にあたっては[公式ホームページ](http://plata.ar.media.kyoto-u.ac.jp/tool/Text2Feature/t2fdoc/_build/html/Tutorial.html)
- も参考にしてください。
+ も参考にしてください。  
 
 ## Usage
 `$cd Text2Feature/bin`  
@@ -34,7 +35,7 @@ SHARP CLOUD LABSの「QAコミュニケーションシステム」にT2Fが採�
 
 ## Install
 ダウンロードにはGitHubを利用します。  
-`$ git clone t2f`
+`$ git clone https://github.com/IKKO-Ohta/Text2Feature`
 
 T2Fの利用にはKyTea,EDAのモデルが必要です。  
 [モデル](http://www.ar.media.kyoto-u.ac.jp/tool/Text2Feature/models.zip)より、ふたつのモデルファイルをダウンロードしてください。  
