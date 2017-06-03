@@ -28,10 +28,16 @@ Python3 + Numpy + Scipyに加え、
 導入にあたっては[公式ホームページ](http://plata.ar.media.kyoto-u.ac.jp/tool/Text2Feature/t2fdoc/_build/html/Tutorial.html)
  も参考にしてください。  
 
-## Usage
+## setup_database
+検索対象となるテキストファイル群を、text2feature/corpus/makeIndex/配下に設置してください。 
+テキストファイルはUTF-8で記載するようにしてください。もしテキストファイルがその他のエンコーディングで書かれている場合、nkfなどにより変換してください。 
+
+## usage
+
 `$cd Text2Feature/bin`  
 `$csh MakeIndex.csh`  
 `$csh Vectorize.csh [target.txt]`  
+
 
 ## Install
 ダウンロードにはGitHubを利用します。  
