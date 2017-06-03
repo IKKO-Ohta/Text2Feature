@@ -22,8 +22,8 @@ SHARP CLOUD LABSの「QAコミュニケーションシステム」にT2Fが採�
 
 ## Requirement
 Python3 + Numpy + Scipyに加え、  
- EDA  
- KyTea  
+依存構造解析器 EDA  
+形態素解析器 KyTea  
 のセットアップが必要です。 
 導入にあたっては[公式ホームページ](http://plata.ar.media.kyoto-u.ac.jp/tool/Text2Feature/t2fdoc/_build/html/Tutorial.html)
  も参考にしてください。  
