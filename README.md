@@ -1,7 +1,7 @@
 Text2Feature
 ====
 
-Overview
+## Overview
 Text2Featureは京都大学 情報学研究科の学生によって開発された文書検索エンジンです。  
 大量の日本語文書をプログラムに扱いやすいよう変換し、指定された文書と似た文書をデータベースから探し出します。
 ## Description
