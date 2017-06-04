@@ -14,7 +14,7 @@ Text2FeatureはUNIX環境でお使いいただけます。
 Text2Featureの特色として、依存構造を加味したn-gramのトークンを素性としてカウントすることができます。  
 これをDep-Ngramと呼び、Unigram,Bigram,Trigram,に加え、Dep-Bigram,Dep-Trigramを素性として設定することができます。  
 Blacklist/Whitelist/Synonymを管理することができます。  
-より詳細な説明についてはText2Feature公式ページもご覧ください。
+より詳細な説明については[Text2Feature公式ページ](http://plata.ar.media.kyoto-u.ac.jp/tool/Text2Feature/t2fdoc/_build/html/index.html)もご覧ください。
 
 ## Solution
 SHARP CLOUD LABSの「QAコミュニケーションシステム」にT2Fが採用されました。  
@@ -56,4 +56,4 @@ Atsushi Ushiku(初代リーダー)
 Ikko Ohta(現リーダー)  
 Ryo Tomori(開発)  
 
-Shinsuke Mori（指導）
+Shinsuke Mori（指導)  
